@@ -1,0 +1,367 @@
+{
+  "name": "AI Developer Daily Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "48b0c58c-cf14-4263-8aa3-05a9c81a60c8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://hacker-news.firebaseio.com/v0/topstories.json",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d41516fd-ba7d-42ba-a2e4-fcfd3a4d2c4e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ids = JSON.parse($input.first().json.data);\n\nreturn ids.slice(0, 10).map(id => ({\n  json: {\n    storyId: id\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "19b563e7-e2a1-4f72-beba-ba44e4bc7edd",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "=https://hacker-news.firebaseio.com/v0/item/{{$json.storyId}}.json",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "807f9653-b01c-4130-bfdb-ea6f20e1fd93",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2e51768e-f171-4647-b89b-6bf1572d0d16",
+              "leftValue": "={{$json.title}}   contains   AI",
+              "rightValue": "={{$json.title}}   contains   AI",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "46c25884-819c-4fe2-b8d3-f2f91601bfc3",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "6925bee6-10b6-44c7-98c8-f5368d720440",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1f1a0ad-2bcb-4c35-aa8d-6e90bb0298d8",
+              "name": "title",
+              "value": "={{$json.title}}",
+              "type": "string"
+            },
+            {
+              "id": "675877f7-370a-4a3e-9603-357a975bbcb5",
+              "name": "url",
+              "value": "={{$json.url}}",
+              "type": "string"
+            },
+            {
+              "id": "b50eb7dc-697a-4cfe-b10f-b452e6d04770",
+              "name": "score",
+              "value": "={{$json.score}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "768e7900-cdef-46e7-b0c2-b1a6da6abfc3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stories = $input.all();\n\nconst text = stories.map((item, index) => {\n  return `${index + 1}. ${item.json.title}\nScore: ${item.json.score}\nURL: ${item.json.url}`;\n}).join('\\n\\n');\n\nreturn [\n  {\n    json: {\n      stories: text\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "cdd54163-7030-4abf-816c-7a19440c69d4",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI Developer News Analyst.\n\nCreate a concise AI Developer Daily Brief from the stories provided below.\n\nSelect only stories relevant to:\nAI, machine learning, software development, programming, developer tools, open source, cybersecurity, cloud, infrastructure, or interesting technical projects.\n\nUse this exact format:\n\nAI DEVELOPER DAILY BRIEF\n\n1. TITLE\nSummary: one or two sentences.\nWhy developers should care: one sentence.\nURL: https://example.com\n\n2. TITLE\nSummary: one or two sentences.\nWhy developers should care: one sentence.\nURL: https://example.com\n\n3. TITLE\nSummary: one or two sentences.\nWhy developers should care: one sentence.\nURL: https://example.com\n\n4. TITLE\nSummary: one or two sentences.\nWhy developers should care: one sentence.\nURL: https://example.com\n\nThen:\n\nTOP 3 TAKEAWAYS\n\n1. One takeaway.\n2. One takeaway.\n3. One takeaway.\n\nIMPORTANT:\nReturn PLAIN TEXT ONLY.\nDo NOT use Markdown.\nDo NOT use # symbols.\nDo NOT use * symbols.\nDo NOT use [ ] or ( ) for links.\nDo NOT write escaped characters such as \\n.\nDo NOT put URLs inside Markdown links.\nWrite each section on separate lines.\n\nStories:\n\n{{$json.stories}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1792,
+        0
+      ],
+      "id": "b8453d22-5b8d-4aba-9599-50aad0ce678e",
+      "name": "Message a model",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "needlD2Wg9TaT2Xd",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nlet text = input.brief || input.text || input.message || '';\n\nif (!text && input.content?.parts?.[0]?.text) {\n  text = input.content.parts[0].text;\n}\n\ntext = String(text);\n\n// Convert literal backslash+n into real new lines\ntext = text.split('\\\\n').join('\\n');\n\n// Remove markdown bold\ntext = text.split('**').join('');\n\nreturn [\n  {\n    json: {\n      message: text.trim()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        0
+      ],
+      "id": "06ad063d-b4ae-487b-99f8-3b4da4111415",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "1841885993",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2400,
+        0
+      ],
+      "id": "00a0bc79-6044-4195-af98-a453e8fa324e",
+      "name": "Send a text message",
+      "webhookId": "3ff4675e-fcd1-4cec-b00e-71ba956db917",
+      "credentials": {
+        "telegramApi": {
+          "id": "BPYsRdI8xuxtdEit",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fd0dd8a4-4959-4bcd-8467-7cb899cbcd5e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5832e31788c8cc122ae150a87a055f8cfa9f1f51b1d3beb1bf662b73b133d1db"
+  },
+  "nodeGroups": [],
+  "id": "B0dhy9LM5XN0tjYA",
+  "tags": []
+}
