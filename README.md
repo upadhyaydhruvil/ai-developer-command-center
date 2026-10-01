@@ -2,61 +2,56 @@
 
 An automated AI-powered developer news briefing system built with n8n.
 
-The workflow collects developer and AI-related content, processes the information, generates a concise daily briefing using an AI model, and delivers the final report automatically through Telegram.
+The workflow collects developer and AI-related content, filters relevant articles, generates a concise daily brief using an AI model, and delivers the final report directly to Telegram.
 
 ## Workflow
 
 Schedule Trigger
-        ↓
-News Collection
-        ↓
-Filtering & Selection
-        ↓
-AI Summarization
-        ↓
-Report Formatting
-        ↓
-Telegram Bot
-        ↓
-Daily Developer Brief
+→ Fetch Developer News
+→ JavaScript Processing
+→ HTTP Request
+→ Filter Relevant Content
+→ Limit Articles
+→ Format Data
+→ AI Summarization
+→ JavaScript Processing
+→ Telegram
 
 ## Features
 
-- Automated scheduled execution
-- Developer and AI news collection
-- Content filtering
-- AI-powered summarization
-- Daily developer briefing
-- Telegram delivery
-- Docker-based n8n environment
-- JavaScript-based workflow processing
+- Automated daily developer news collection
+- AI-powered article summarization
+- Relevance filtering
+- Top article selection
+- Developer-focused insights
+- Automated Telegram delivery
+- Fully automated n8n workflow
 
 ## Tech Stack
 
 - n8n
 - JavaScript
+- HTTP APIs
 - AI / LLM
 - Telegram Bot API
+- GitHub
 - Docker
-- REST APIs
 
-## Example
+## Example Output
 
-The bot generates a briefing containing:
+The system generates a daily brief containing:
 
-- Important developer and AI news
-- Short summaries
-- Why each topic matters
-- Source URLs
-- Top takeaways
+1. Important developer/AI articles
+2. Short summaries
+3. Why developers should care
+4. Article URLs
+5. Top developer takeaways
 
 ## Project Structure
 
 ```text
 ai-developer-command-center/
 ├── workflows/
-│   └── ai-developer-daily-brief.json
-├── docs/
-│   └── architecture.png
+│   └── AI Developer Daily Brief.json
 ├── .gitignore
 └── README.md
